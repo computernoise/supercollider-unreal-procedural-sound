@@ -1,7 +1,5 @@
 (
-// --------------------------------------------------
-// UNREAL OSC — 64 SLOT MAPPING SYSTEM
-// --------------------------------------------------
+// unreal OSC — 64 slot monitor
 
 ~cellData = Array.fill(64, {
 	(
@@ -14,23 +12,18 @@
 	)
 });
 
-~cellMaps = Array.fill(64, nil);
-~cellMapEnabled = Array.fill(64, false);
-
-// --------------------------------------------------
-// GUI
-// --------------------------------------------------
+// gui
 
 ~cellWindow = Window(
-	"UNREAL / OSC SLOT MAPPER",
-	Rect(100, 100, 460, 390)
+	"UNREAL / OSC SLOT MONITOR",
+	Rect(100, 100, 460, 360)
 ).front;
 
 ~cellWindow.view.background = Color.black;
 
 ~cellSlot = 0;
 
-// Slot selector
+// slot selector
 ~slotMenu = PopUpMenu(
 	~cellWindow,
 	Rect(20, 20, 200, 30)
@@ -45,27 +38,9 @@
 	~refreshCellGUI.();
 };
 
-// Mapping enable checkbox
-~mapEnable = Button(
-	~cellWindow,
-	Rect(250, 20, 180, 30)
-);
-
-~mapEnable.states = [
-	["MAPPING OFF", Color.white, Color.gray(0.2)],
-	["MAPPING ON", Color.black, Color.green]
-];
-
-~mapEnable.action = { |button|
-	~cellMapEnabled[~cellSlot] = button.value == 1;
-};
-
-// --------------------------------------------------
-// DATA DISPLAY
-// --------------------------------------------------
+// data display
 
 ~cellDisplay = ();
-
 [
 	["Active", 70],
 	["Cell ID", 115],
@@ -92,15 +67,11 @@
 	.font_(Font("Monaco", 14));
 };
 
-// --------------------------------------------------
-// GUI REFRESH
-// --------------------------------------------------
+// gui refresh
 
 ~refreshCellGUI = {
 
 	var d = ~cellData[~cellSlot];
-
-	~mapEnable.value = ~cellMapEnabled[~cellSlot];
 
 	~cellDisplay[0].string = d.active.asString;
 	~cellDisplay[1].string = d.cellId.asString;
@@ -110,9 +81,7 @@
 	~cellDisplay[5].string = d.z.round(0.001).asString;
 };
 
-// --------------------------------------------------
-// OSC RECEIVER
-// --------------------------------------------------
+// OSC receiver
 
 OSCdef(\greenCell, { |msg, time, addr, recvPort|
 
@@ -136,17 +105,10 @@ OSCdef(\greenCell, { |msg, time, addr, recvPort|
 				z: msg[7].asFloat
 			);
 
-			// Store latest values
+			// store latest values
 			~cellData[id] = data;
 
-			// Execute mapping for this slot
-			if(~cellMapEnabled[id] == true) {
-				if(~cellMaps[id].notNil) {
-					~cellMaps[id].value(data, id);
-				};
-			};
-
-			// Refresh GUI only if this slot is selected
+			// refresh GUI only if this slot is selected
 			if(id == ~cellSlot) {
 
 				{
@@ -158,12 +120,8 @@ OSCdef(\greenCell, { |msg, time, addr, recvPort|
 
 }, '/game/cell', recvPort: 57128);
 
-// --------------------------------------------------
-// INITIAL DISPLAY
-// --------------------------------------------------
+// initial display
 
 ~refreshCellGUI.();
 
 )
-
-~cellMapEnabled = Array.fill(64, false);
