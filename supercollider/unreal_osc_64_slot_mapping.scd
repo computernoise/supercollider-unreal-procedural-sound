@@ -16,7 +16,7 @@
 
 ~cellWindow = Window(
 	"UNREAL / OSC SLOT MONITOR",
-	Rect(100, 100, 460, 360)
+	Rect(100, 100, 240, 360)
 ).front;
 
 ~cellWindow.view.background = Color.black;
