@@ -1,6 +1,7 @@
 //luissanz.ch
 //important evaluate this buffer for a single sample feedback possibility
 //free buffers if you have buffers evaluated: Buffer.freeAll;
+Buffer.freeAll;
 b = Buffer.alloc(s, 1);
 //thanks to Joonas Siren [forces] / ffforces.bandcamp.com
 
@@ -43,17 +44,70 @@ SynthDef(\fm,{ arg amp=0.8,freq=20,splay=0.4, index2, index3, index4, index5, in
 ).add;
 )
 
+// Map active OSC cell slot 0 coordinates (-10..10) to synth controls.
+(
+~fmOscSlot = 2; // change slop
+~fmOscControls = (
+	splay: 0.0,
+	ratio1: 0.0, ratio2: 9.0, ratio3: 0.0,
+	ratio4: 0.0, ratio5: 0.0, ratio6: 9.0,
+	index2: 9.0, index3: 9.0, index4: 0.0, index5: 9.0,
+	env1att: 8.0, env1rel: 20.0,
+	env2att: 10.007, env2rel: 10.007,
+	env3att: 8.0, env3rel: 20.0
+);
+
+~fmMapOscCoordinate = { |value, outMin, outMax|
+	value.clip(-10.0, 10.0).linlin(-10.0, 10.0, outMin, outMax)
+};
+
+OSCdef(\fmSynthCellMap, { |msg|
+	var slot, active, x, y, z;
+
+	if(msg.size >= 8) {
+		slot = msg[1].asInteger;
+		active = msg[2].asInteger;
+
+		if((slot == ~fmOscSlot) and: { active != 0 }) {
+			x = msg[5].asFloat;
+			y = msg[6].asFloat;
+			z = msg[7].asFloat;
+
+			~fmOscControls = (
+				splay: ~fmMapOscCoordinate.(x, 0.0, 0.9),
+				ratio1: ~fmMapOscCoordinate.(x, 0.1, 9.0),
+				ratio2: ~fmMapOscCoordinate.(x, 0.0, 0.1),
+				ratio3: ~fmMapOscCoordinate.(x, 0.0, 1.0),
+				ratio4: ~fmMapOscCoordinate.(x, 0.1, 9.0),
+				ratio5: ~fmMapOscCoordinate.(x, 0.1, 9.0),
+				ratio6: ~fmMapOscCoordinate.(x, 0.1, 9.0),
+				index2: ~fmMapOscCoordinate.(y, 0.0, 9.0),
+				index3: ~fmMapOscCoordinate.(y, 0.0, 9.0),
+				index4: ~fmMapOscCoordinate.(y, 0.0, 9.0),
+				index5: ~fmMapOscCoordinate.(y, 0.0, 9.0),
+				env1att: ~fmMapOscCoordinate.(z, 0.007, 8.0),
+				env1rel: ~fmMapOscCoordinate.(z, 0.1, 20.0),
+				env2att: ~fmMapOscCoordinate.(z, 5.0, 10.0),
+				env2rel: ~fmMapOscCoordinate.(z, 5.0, 10.0),
+				env3att: ~fmMapOscCoordinate.(z, 0.007, 8.0),
+				env3rel: ~fmMapOscCoordinate.(z, 0.1, 20.0)
+			);
+		};
+	};
+}, '/game/cell', recvPort: 57128);
+)
+
 // pattern
 (
 Pbindef(\a,
     \instrument, \fm,
 
         // Rhythm
-        \dur, 0.1 * PSVsymdif_i([3, 5, 6, 7, 9, 10, 11, 12, 14, 15]),
+        \dur, 10, // * PSVsymdif_i([3, 5, 6, 7, 9, 10, 11, 12, 14, 15]),
 
         // Pitch
         \scale, Scale.minor,
-        \octave, 3,
+        \octave, 4,
         \degree, Pseq([
             [0, 2, 5, 9],
             [2, 5, 9, 12],
@@ -66,33 +120,35 @@ Pbindef(\a,
         },
 
         // Stereo
-		\splay, 0.0, //(map X value  \splay, 0.0 - 0.9)
+		\splay, Pfunc { ~fmOscControls[\splay] },
 
         // Operator ratios
-        \ratio1, 0, //(map X value  \splay, 0.0 - 9.0)
-        \ratio2, 9, //(map X value  \splay, 0.0 - 9.0)
-        \ratio3, 0,
-        \ratio4, 0,
-        \ratio5, 0,
-        \ratio6, 9, //(map Y value  \splay, 0.0 - 9.0)
+        \ratio1, Pfunc { ~fmOscControls[\ratio1] },
+        \ratio2, Pfunc { ~fmOscControls[\ratio2] },
+        \ratio3, Pfunc { ~fmOscControls[\ratio3] },
+        \ratio4, Pfunc { ~fmOscControls[\ratio4] },
+        \ratio5, Pfunc { ~fmOscControls[\ratio5] },
+        \ratio6, Pfunc { ~fmOscControls[\ratio6] },
 
         // Amplitude envelopes
-        \env1att, 8,
-        \env1rel, 20,
-        \env3att, 8,
-        \env3rel, 20,
+        \env1att, 5.004, // Pfunc { ~fmOscControls[\env1att] },
+        \env1rel, 20, // Pfunc { ~fmOscControls[\env1rel] },
+        \env3att, 8, //Pfunc { ~fmOscControls[\env3att] },
+        \env3rel, 20, //Pfunc { ~fmOscControls[\env3rel] },
 
         // Modulation envelope
-        \env2att, 10.007,
-        \env2rel, 10.007,
+        \env2att, 10.007, //Pfunc { ~fmOscControls[\env2att] },
+        \env2rel, 10.007, //Pfunc { ~fmOscControls[\env2rel] },
 
         // FM indices
-        \index2, 9, //(map Y value  \splay, 0.0 - 3.0)
-        \index3, 9,
-        \index4, 0,
-        \index5, 9, //(map Z value  \splay, 0.0 - 9.0)
+        \index2, Pfunc { ~fmOscControls[\index2] },
+        \index3, Pfunc { ~fmOscControls[\index3] },
+        \index4, Pfunc { ~fmOscControls[\index4] },
+        \index5, Pfunc { ~fmOscControls[\index5] },
 
         // Output level
         \amp, 0.025
 ).play;
 )
+
+Pbindef(\a).stop;
