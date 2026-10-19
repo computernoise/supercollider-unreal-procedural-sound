@@ -1,7 +1,7 @@
 //luissanz.ch
 //important evaluate this buffer for a single sample feedback possibility
 //free buffers if you have buffers evaluated: Buffer.freeAll;
-Buffer.freeAll;
+//Buffer.freeAll;
 b = Buffer.alloc(s, 1);
 //thanks to Joonas Siren [forces] / ffforces.bandcamp.com
 
@@ -46,7 +46,7 @@ SynthDef(\fm,{ arg amp=0.8,freq=20,splay=0.4, index2, index3, index4, index5, in
 
 // Map active OSC cell slot 0 coordinates (-10..10) to synth controls.
 (
-~fmOscSlot = 2; // change slop
+~fmOscSlot = 2; // change slot
 ~fmOscControls = (
 	splay: 0.0,
 	ratio1: 0.0, ratio2: 9.0, ratio3: 0.0,
