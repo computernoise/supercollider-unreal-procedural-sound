@@ -123,18 +123,18 @@ Pbindef(\a,
 		\splay, Pfunc { ~fmOscControls[\splay] },
 
         // Operator ratios
-        \ratio1, Pfunc { ~fmOscControls[\ratio1] },
-        \ratio2, Pfunc { ~fmOscControls[\ratio2] },
-        \ratio3, Pfunc { ~fmOscControls[\ratio3] },
+        \ratio1, 9, //Pfunc { ~fmOscControls[\ratio1] },
+        \ratio2, 0, //Pfunc { ~fmOscControls[\ratio2] },
+        \ratio3, 9, //Pfunc { ~fmOscControls[\ratio3] },
         \ratio4, Pfunc { ~fmOscControls[\ratio4] },
         \ratio5, Pfunc { ~fmOscControls[\ratio5] },
         \ratio6, Pfunc { ~fmOscControls[\ratio6] },
 
         // Amplitude envelopes
-        \env1att, 5.004, // Pfunc { ~fmOscControls[\env1att] },
-        \env1rel, 20, // Pfunc { ~fmOscControls[\env1rel] },
-        \env3att, 8, //Pfunc { ~fmOscControls[\env3att] },
-        \env3rel, 20, //Pfunc { ~fmOscControls[\env3rel] },
+        \env1att, 0, //5.004, // Pfunc { ~fmOscControls[\env1att] },
+        \env1rel, 20, //20, // Pfunc { ~fmOscControls[\env1rel] },
+        \env3att, Pfunc { ~fmOscControls[\env3att] },
+        \env3rel, Pfunc { ~fmOscControls[\env3rel] },
 
         // Modulation envelope
         \env2att, 10.007, //Pfunc { ~fmOscControls[\env2att] },
@@ -152,3 +152,5 @@ Pbindef(\a,
 )
 
 Pbindef(\a).stop;
+
+
